@@ -1,0 +1,45 @@
+# .github/workflows/docker-ci.yml
+name: Docker Web Server CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Flask app image
+        run: docker build -t flask-webserver ./app
+
+      - name: Build Nginx image
+        run: docker build -t nginx-proxy ./nginx
+
+      - name: Start containers
+        run: docker compose up -d
+
+      - name: Wait for health check
+        run: sleep 15
+
+      - name: Test Flask health endpoint
+        run: curl -f http://localhost/api/health
+
+      - name: Test Flask info endpoint
+        run: curl -f http://localhost/api/info
+
+      - name: Test Nginx health
+        run: curl -f http://localhost/nginx-health
+
+      - name: Show container status
+        run: docker ps
+
+      - name: Show container logs
+        run: docker compose logs
+
+      - name: Tear down
+        run: docker compose down

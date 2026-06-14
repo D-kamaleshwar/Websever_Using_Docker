@@ -6,7 +6,7 @@
 
 ## 📸 Preview
 
-![App Preview](images/preview.png)
+![App Preview](image.png)
 
 ---
 

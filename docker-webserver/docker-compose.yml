@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  flask-app:
+    build: ./app
+    container_name: flask-webserver
+    restart: unless-stopped
+    environment:
+      - FLASK_ENV=production
+    volumes:
+      - app_data:/app/data
+    networks:
+      - webnet
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  nginx:
+    build: ./nginx
+    container_name: nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      flask-app:
+        condition: service_healthy
+    networks:
+      - webnet
+
+networks:
+  webnet:
+    driver: bridge
+
+volumes:
+  app_data:
